@@ -1,0 +1,52 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@{
+
+}
+
+<div class="text-center">
+    <h1 class="display-4">ingestion</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <form action="/" method="get">
+                <th>
+                    id
+                </th>
+                <th>created_at</th>
+                <th>user_id</th>
+                <th>data_schema_name</th>
+                <th>data_schema_version</th>
+                    @* <th>data</th> *@
+                </form>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Ingestions != null)
+            {
+                foreach (var ingestion in Model.Ingestions)
+                {
+                    <tr>
+                        <td>@ingestion.id</td>
+                        <td>@ingestion.created_at</td>
+                        <td>@ingestion.user_id</td>
+                        <td>@ingestion.data_schema_name</td>
+                        <td>@ingestion.data_schema_version</td>
+                        @* <td>@ingestion.data.ToString()</td> *@
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        alert('hello world')
+    </script>
+}
