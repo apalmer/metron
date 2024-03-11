@@ -20,3 +20,13 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.btn-secondary-inline-form {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+}
+
+    .btn-secondary-inline-form:hover {
+        background-color: #ced4da;
+        border: 1px solid #ced4da;
+    }
