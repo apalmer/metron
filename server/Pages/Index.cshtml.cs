@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Reactive.Subjects;
+using System.Collections.Generic;
 
 namespace Metron.Pages
 {
@@ -9,7 +10,7 @@ namespace Metron.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IConfiguration _configuration;
 
-        public IEnumerable<Models.Ingestion>? Ingestions { get; set; } 
+        public IEnumerable<Models.Ingestion>? Ingestions { get; set; }
 
         public IndexModel(ILogger<IndexModel> logger, IConfiguration configuration)
         {
@@ -18,7 +19,7 @@ namespace Metron.Pages
             Ingestions = new List<Models.Ingestion>();
         }
 
-        public async Task<IActionResult> OnGet(string? som)
+        public async Task<IActionResult> OnGet(string? order)
         {
             var url = _configuration["SUPABASE_URL"];
             var key = _configuration["SUPABASE_KEY"];
@@ -30,9 +31,21 @@ namespace Metron.Pages
 
             var session = await supabase.Auth.SignIn(email, password);
 
-            var results = await supabase.From<Models.Ingestion>().Get();
+            var table = supabase.From<Models.Ingestion>();
+            if (order != null)
+            {
+                var cases = order.Split(',');
+                foreach (var c in cases)
+                {
+                    var criteria = c.Split('.');
+                    var orderDirection = criteria[1] == "desc" ? Postgrest.Constants.Ordering.Descending : Postgrest.Constants.Ordering.Ascending;
+                    table.Order(criteria[0], orderDirection);
+                }
+            }
 
-            Ingestions = results.Models.ToList();
+            var results = await table.Get();
+
+            Ingestions = results.Models;
 
             return Page();
         }

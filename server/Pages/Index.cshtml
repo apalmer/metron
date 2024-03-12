@@ -11,34 +11,34 @@
 <div class="text-center">
     <h1 class="display-4">ingestion</h1>
 
-    <form id="form-query" action="/" method="get" >
+    <form id="form-query" action="/" method="get">
 
         <div class="input-group mb-3">
-            <span class="input-group-text" >created_at</span>
+            <span class="input-group-text">created_at</span>
             <input id="filter-id" data-field="id" type="text" class="form-control" aria-label="Filter id">
-            <button class="btn btn-secondary-inline-form" data-field="created_at" type="submit"><i class="bi-funnel"></i></button>
-            <button class="btn btn-secondary-inline-form" data-field="created_at" type="submit"><i class="bi-dash"></i></button>
+            <button class="btn btn-secondary-inline-form data-filter" data-field="created_at" type="submit"><i class="bi-funnel"></i></button>
+            <button class="btn btn-secondary-inline-form data-sorter" data-field="created_at" type="submit"><i class="bi-dash"></i></button>
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" >user_id</span>
+            <span class="input-group-text">user_id</span>
             <input id="filter-user_id" data-field="user_id" type="text" class="form-control" aria-label="Filter user_id">
-            <button class="btn btn-secondary-inline-form" data-field="user_id" type="submit"><i class="bi-funnel"></i></button>
-            <button class="btn btn-secondary-inline-form" data-field="user_id" type="submit"><i class="bi-dash"></i></button>
+            <button class="btn btn-secondary-inline-form data-filter" data-field="user_id" type="submit"><i class="bi-funnel"></i></button>
+            <button class="btn btn-secondary-inline-form data-sorter" data-field="user_id" type="submit"><i class="bi-dash"></i></button>
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" >data_schema_name</span>
+            <span class="input-group-text">data_schema_name</span>
             <input id="filter-data_schema_name" data-field="data_schema_name" type="text" class="form-control" aria-label="Filter data_schema_name">
-            <button class="btn btn-secondary-inline-form" data-field="data_schema_name" type="submit"><i class="bi-funnel"></i></button>
-            <button class="btn btn-secondary-inline-form" data-field="data_schema_nameS" type="submit"><i class="bi-dash"></i></button>
+            <button class="btn btn-secondary-inline-form data-filter" data-field="data_schema_name" type="submit"><i class="bi-funnel"></i></button>
+            <button class="btn btn-secondary-inline-form data-sorter" data-field="data_schema_name" type="submit"><i class="bi-dash"></i></button>
         </div>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" >data_schema_version</span>
+            <span class="input-group-text">data_schema_version</span>
             <input id="filter-data_schema_version" data-field="data_schema_version" type="text" class="form-control" aria-label="Filter data_schema_version">
-            <button class="btn btn-secondary-inline-form" data-field="data_schema_version" type="submit"><i class="bi-funnel"></i></button>
-            <button class="btn btn-secondary-inline-form" data-field="data_schema_version" type="submit"><i class="bi-dash"></i></button>
+            <button class="btn btn-secondary-inline-form data-filter" data-field="data_schema_version" type="submit"><i class="bi-funnel"></i></button>
+            <button class="btn btn-secondary-inline-form data-sorter" data-field="data_schema_version" type="submit"><i class="bi-dash"></i></button>
         </div>
 
     </form>
@@ -76,9 +76,49 @@
 @section Scripts {
     <script type="text/javascript">
         $(document).ready(function () {
-            $('#form-query').on('submit', (e) => { 
-                //alert('submitting');
+            $('#form-query').on('submit', (e) => {
                 e.preventDefault();
+            });
+
+            $(document).on('click', 'button.data-filter', (e) => {
+                alert($(e.currentTarget).data('field'));
+            });
+
+            $('.data-sorter').on('click', (e) => {
+                var fieldName = e.currentTarget.getAttribute('data-field');
+                var orderDirection = 'asc';
+                var updatedCase = fieldName + '.' + orderDirection;
+
+                var searchParams = new URLSearchParams(window.location.search);
+                var order = searchParams.get("order");
+                if (order) {
+                    var cases = order.split(',');
+                    var foundIndex = -1;
+                    var found = cases.find((value, index) => {
+                        var fieldFound = value.split('.')[0] === fieldName;
+                        if (fieldFound) {
+                            foundIndex = index;
+                        }
+                        return fieldFound;
+                    })
+
+                    if (found) {
+                        cases[foundIndex] = updatedCase;
+                    }
+                    else {
+                        cases.push(updatedCase);
+                    }
+
+                    order = cases.join(',');
+                }
+                else {
+                    order = updatedCase;
+                }
+                searchParams.set("order", order);
+                var sp = searchParams.toString();
+                window.location.search = sp;
+
+                //window.location.href = window.location.href;
             });
         });
     </script>
