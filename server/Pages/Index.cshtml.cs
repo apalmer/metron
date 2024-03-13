@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Reactive.Subjects;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace Metron.Pages
 {
@@ -19,7 +20,7 @@ namespace Metron.Pages
             Ingestions = new List<Models.Ingestion>();
         }
 
-        public async Task<IActionResult> OnGet(string? order)
+        public async Task<IActionResult> OnGet(string? id, string? created_at, string? user_id, string? data_schema_name, string? data_schema_version, string? order)
         {
             var url = _configuration["SUPABASE_URL"];
             var key = _configuration["SUPABASE_KEY"];
@@ -31,7 +32,47 @@ namespace Metron.Pages
 
             var session = await supabase.Auth.SignIn(email, password);
 
+            var filters = new Dictionary<string, string>();
+
+            if(id != null)
+            {
+                filters.Add("id", id);
+            }
+
+            if (created_at != null)
+            {
+                filters.Add("created_at", created_at);
+            }
+
+            if (user_id != null)
+            {
+                filters.Add("user_id", user_id);
+            }
+
+            if (data_schema_name != null)
+            {
+                filters.Add("data_schema_name", data_schema_name);
+            }
+
+            if (data_schema_version != null)
+            {
+                filters.Add("data_schema_version", data_schema_version);
+            }
+
             var table = supabase.From<Models.Ingestion>();
+
+            foreach (var filterKey in filters.Keys)
+            {
+                var critera = filters[filterKey].Split(".");
+                var operation = critera[0].ToUpper();
+                var operand = critera[1];
+
+                if (operation == "LIKE" &&  !String.IsNullOrWhiteSpace(operand))
+                {
+                    table.Filter(filterKey, Postgrest.Constants.Operator.Like, operand);
+                }
+            }
+
             if (order != null)
             {
                 var cases = order.Split(',');

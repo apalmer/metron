@@ -81,7 +81,13 @@
             });
 
             $(document).on('click', 'button.data-filter', (e) => {
-                alert($(e.currentTarget).data('field'));
+                var fieldName = e.currentTarget.getAttribute('data-field');
+                var filterValue = $('#filter-' + fieldName).val();
+
+                var searchParams = new URLSearchParams(window.location.search);
+                searchParams.set(fieldName, 'like.'+filterValue);
+                var sp = searchParams.toString();
+                window.location.search = sp;
             });
 
             $('.data-sorter').on('click', (e) => {
