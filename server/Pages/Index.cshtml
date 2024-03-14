@@ -76,6 +76,7 @@
 @section Scripts {
     <script type="text/javascript">
         $(document).ready(function () {
+
             $('#form-query').on('submit', (e) => {
                 e.preventDefault();
             });
@@ -85,47 +86,92 @@
                 var filterValue = $('#filter-' + fieldName).val();
 
                 var searchParams = new URLSearchParams(window.location.search);
-                searchParams.set(fieldName, 'like.'+filterValue);
-                var sp = searchParams.toString();
-                window.location.search = sp;
+                var filter = searchParams.get(fieldName);
+                if (filter) {
+                    searchParams.delete(fieldName);
+                }
+                else {
+                    searchParams.set(fieldName, 'like.' + filterValue);
+                }
+
+                window.location.search = searchParams.toString();
             });
 
             $('.data-sorter').on('click', (e) => {
                 var fieldName = e.currentTarget.getAttribute('data-field');
                 var orderDirection = 'asc';
-                var updatedCase = fieldName + '.' + orderDirection;
+                var orderString = fieldName + '.' + orderDirection;
 
                 var searchParams = new URLSearchParams(window.location.search);
-                var order = searchParams.get("order");
-                if (order) {
-                    var cases = order.split(',');
-                    var foundIndex = -1;
-                    var found = cases.find((value, index) => {
-                        var fieldFound = value.split('.')[0] === fieldName;
-                        if (fieldFound) {
-                            foundIndex = index;
-                        }
-                        return fieldFound;
+                var orderSearchParam = searchParams.get('order');
+                if (orderSearchParam) {
+                    var orderStrings = orderSearchParam.split(',');
+                    var foundIndex = orderStrings.findIndex((value, index) => {
+                        return value.split('.')[0] === fieldName;
                     })
 
-                    if (found) {
-                        cases[foundIndex] = updatedCase;
+                    if (foundIndex != -1) {
+                        var previousDirection = orderStrings[foundIndex].split('.')[1];
+                        if (previousDirection.toUpperCase() === 'ASC') {
+                            orderDirection = 'desc';
+                            orderString = fieldName + '.' + orderDirection;
+                            orderStrings[foundIndex] = orderString;
+                        }
+                        else if (previousDirection.toUpperCase() === 'DESC') {
+                            orderDirection = '';
+                            orderStrings.splice(foundIndex, 1);
+                        }
                     }
                     else {
-                        cases.push(updatedCase);
+                        orderStrings.push(orderString);
                     }
 
-                    order = cases.join(',');
+                    orderSearchParam = orderStrings.join(',');
                 }
                 else {
-                    order = updatedCase;
+                    orderSearchParam = orderString;
                 }
-                searchParams.set("order", order);
+                searchParams.set('order', orderSearchParam);
                 var sp = searchParams.toString();
                 window.location.search = sp;
 
                 //window.location.href = window.location.href;
             });
+
+            var searchParams = new URLSearchParams(window.location.search);
+            var orderSearchParam = searchParams.get('order');
+            if (orderSearchParam) {
+                var orderStrings = orderSearchParam.split(',');
+                orderStrings.forEach((value, index) => {
+                    var orderArgs = value.split('.');
+                    var field = orderArgs[0];
+                    var direction = orderArgs[1];
+
+                    var iconClass =
+                        direction.toUpperCase() === 'ASC' ?
+                            'bi-caret-up-fill' :
+                            direction.toUpperCase() === 'DESC' ?
+                                'bi-caret-down-fill' :
+                                'bi-dash';
+
+                    $('.data-sorter[data-field="' + field + '"]').html('<i class="' + iconClass + '">');
+                });
+            }
+
+            var filterKeys = searchParams.forEach((value, key) => {
+                if (key === 'order') { return; }
+
+                var filterArgs = value.split('.');
+                var operation = filterArgs[0];
+                var operand = filterArgs[1];
+
+                if (operation.toUpperCase() === 'LIKE') {
+                    $('#filter-' + key).val(operand).prop("disabled", true);
+                    $('.data-filter[data-field="' + key + '"]').html('<i class="bi-funnel-fill">');
+                }
+
+            });
         });
+
     </script>
 }

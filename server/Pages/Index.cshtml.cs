@@ -63,7 +63,7 @@ namespace Metron.Pages
 
             foreach (var filterKey in filters.Keys)
             {
-                var critera = filters[filterKey].Split(".");
+                var critera = filters[filterKey].Split('.');
                 var operation = critera[0].ToUpper();
                 var operand = critera[1];
 
@@ -75,12 +75,13 @@ namespace Metron.Pages
 
             if (order != null)
             {
-                var cases = order.Split(',');
-                foreach (var c in cases)
+                var orderStrings = order.Split(',');
+                foreach (var orderString in orderStrings)
                 {
-                    var criteria = c.Split('.');
-                    var orderDirection = criteria[1] == "desc" ? Postgrest.Constants.Ordering.Descending : Postgrest.Constants.Ordering.Ascending;
-                    table.Order(criteria[0], orderDirection);
+                    var criteria = orderString.Split('.');
+                    var orderField = criteria[0];
+                    var orderDirection = criteria[1].ToUpper() == "DESC" ? Postgrest.Constants.Ordering.Descending : Postgrest.Constants.Ordering.Ascending;
+                    table.Order(orderField, orderDirection);
                 }
             }
 
