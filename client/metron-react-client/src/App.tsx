@@ -1,10 +1,11 @@
 import './App.css'
+import SupaTime from './components/SupaTime/SupaTime'
 
 function App() {
 
   return (
     <div>
-      Hello, World
+      <SupaTime></SupaTime>
     </div>
   )
 }
